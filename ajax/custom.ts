@@ -1,5 +1,6 @@
 import Request from '.'
-import type { CustomConfig, AllowedRequestMethod } from '.'
+import type { CustomConfig, AllowedRequestMethod, responseData } from '.'
+import { AxiosError } from 'axios'
 
 type ConfigForPromiseHandle = Omit<CustomConfig, 'onSuccess' | 'onFail'>
 
@@ -11,12 +12,13 @@ export default class Ajax extends Request {
         .then(
           (r) => {
             if (r) {
+              // 请求成功
               console.log(r)
             }
           },
-          (err) => {
-            if (err) {
-            }
+          (e: AxiosError<responseData>) => {
+            // 请求失败
+            console.log(e.message)
           }
         )
     }

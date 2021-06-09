@@ -10,7 +10,7 @@ export interface CustomConfig extends AxiosRequestConfig {
 }
 export type AllowedRequestMethod = 'POST' | 'GET' | 'PUT' | 'DELETE'
 
-type responseData = {
+export type responseData = {
   message: any
   status: number
 }
@@ -44,10 +44,10 @@ export default class Request {
         this.cancelTokenMap.set(key, source)
       }
       // <void | responseData, void | AxiosError<responseData>>
-      return this.instance
-        .request<responseData>(config)
-        .then((...args) => this.onSuccess(...args, config))
-        .catch<void | AxiosError<responseData>>((...args) => this.onFail(...args, config))
+      return this.instance.request<responseData>(config).then(
+        (...args) => this.onSuccess(...args, config),
+        (...args) => this.onFail(...args, config)
+      )
     }
   }
   private onSuccess(response: AxiosResponse<responseData>, config: CustomConfig) {
@@ -62,8 +62,8 @@ export default class Request {
       return this.PENDING
     }
     if (config.onFail) return config.onFail(error)
-    return Promise.reject<AxiosError<responseData>>(error)
-    // throw error
+    // return Promise.reject<AxiosError<responseData>>(error)
+    throw error
   }
 }
 
