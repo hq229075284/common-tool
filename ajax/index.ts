@@ -1,17 +1,18 @@
 import type { AxiosError, AxiosInstance, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios'
 
-import Axios, { CancelToken } from 'axios'
+import Axios from 'axios'
 
-export interface CustomConfig extends AxiosRequestConfig {
+export interface CustomConfig<T = any> extends AxiosRequestConfig {
   onceAtSameTime?: boolean
-  onSuccess?(res: responseData): void
-  onFail?(res: AxiosError<responseData>): void
-  getCancelTokenKey?(config: CustomConfig): any
+  onSuccess?(res: ResponseData<T>): void
+  onFail?(res: AxiosError<ResponseData>): void
+  getCancelTokenKey?(config: CustomConfig<T>): any
 }
+
 export type AllowedRequestMethod = 'POST' | 'GET' | 'PUT' | 'DELETE'
 
-export type responseData = {
-  message: any
+export type ResponseData<T = any> = {
+  message: T
   status: number
 }
 
@@ -22,7 +23,7 @@ export default class Request {
   constructor(baseCofig: CustomConfig = { onceAtSameTime: true }) {
     this.instance = Axios.create(baseCofig)
   }
-  protected createAjax(url: string, method: AllowedRequestMethod = 'POST') {
+  protected _createAjax<T>(url: string, method: AllowedRequestMethod = 'POST') {
     return (data: any, otherConfig: CustomConfig) => {
       const config: CustomConfig = {
         ...this.instance.defaults,
@@ -43,26 +44,26 @@ export default class Request {
         }
         this.cancelTokenMap.set(key, source)
       }
-      // <void | responseData, void | AxiosError<responseData>>
-      return this.instance.request<responseData>(config).then(
-        (...args) => this.onSuccess(...args, config),
+      // <void | ResponseData, void | AxiosError<ResponseData>>
+      return this.instance.request(config).then(
+        (...args) => this.onSuccess<T>(...args, config),
         (...args) => this.onFail(...args, config)
       )
     }
   }
-  private onSuccess(response: AxiosResponse<responseData>, config: CustomConfig) {
+  private onSuccess<T>(response: AxiosResponse<ResponseData<T>>, config: CustomConfig) {
     const { data } = response
     if (config.onSuccess) {
       return config.onSuccess(data)
     }
     return data
   }
-  private onFail(error: AxiosError<responseData>, config: CustomConfig) {
+  private onFail(error: AxiosError<ResponseData>, config: CustomConfig) {
     if (Axios.isCancel(error)) {
       return this.PENDING
     }
     if (config.onFail) return config.onFail(error)
-    // return Promise.reject<AxiosError<responseData>>(error)
+    // return Promise.reject<AxiosError<ResponseData>>(error)
     throw error
   }
 }

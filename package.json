@@ -1,0 +1,24 @@
+{
+  "name": "common-tool",
+  "version": "1.0.0",
+  "description": "",
+  "main": ".prettierrc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hq229075284/common-tool.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hq229075284/common-tool/issues"
+  },
+  "homepage": "https://github.com/hq229075284/common-tool#readme",
+  "devDependencies": {
+    "axios": "^0.21.1",
+    "typescript": "^4.3.2"
+  }
+}
