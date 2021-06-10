@@ -4,7 +4,7 @@
   "description": "",
   "main": ".prettierrc.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "dir=ajax&&config=$(node createJson.js --dir $dir)&&tsc -p $config"
   },
   "repository": {
     "type": "git",
@@ -18,12 +18,11 @@
   },
   "homepage": "https://github.com/hq229075284/common-tool#readme",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@rollup/plugin-typescript": "^8.2.1",
     "axios": "^0.21.1",
     "rollup": "^2.51.1",
-    "rollup-plugin-babel": "^4.4.0",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-typescript": "^1.0.1",
     "tslib": "^2.2.0",
     "typescript": "^4.3.2"
   }
