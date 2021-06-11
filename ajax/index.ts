@@ -17,9 +17,9 @@ export type ResponseData<T = any> = {
 }
 
 export default class Request {
-  instance: AxiosInstance
-  PENDING = new Promise<never>(() => {})
-  cancelTokenMap = new Map()
+  protected instance: AxiosInstance
+  protected PENDING = new Promise<never>(() => {})
+  protected cancelTokenMap = new Map()
   constructor(baseCofig: CustomConfig = { onceAtSameTime: true }) {
     this.instance = Axios.create(baseCofig)
   }
