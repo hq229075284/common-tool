@@ -2,28 +2,38 @@
   "name": "common-tool",
   "version": "1.0.0",
   "description": "",
-  "main": ".prettierrc.js",
+  "main": "",
   "scripts": {
-    "build": "dir=ajax&&config=$(node createJson.js --dir $dir)&&tsc -p $config"
+    "build": "node build-with-tsc.js --dir ajax"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hq229075284/common-tool.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "tool"
+  ],
+  "author": "韩卿",
+  "license": "apache-2.0",
   "bugs": {
     "url": "https://github.com/hq229075284/common-tool/issues"
   },
+  "files": [
+    "ajax/**/+(*.js|*.d.ts)",
+    "cache/**/+(*.js|*.d.ts)",
+    "socket/**/+(*.js|*.d.ts)"
+  ],
   "homepage": "https://github.com/hq229075284/common-tool#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
-    "axios": "^0.21.1",
     "rollup": "^2.51.1",
+    "shelljs": "^0.8.4",
     "tslib": "^2.2.0",
     "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "axios": "^0.21.1"
   }
 }
