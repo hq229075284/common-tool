@@ -1,10 +1,10 @@
 {
   "name": "common-tool",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
-  "main": "",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "node build-with-tsc.js --dir ajax"
+    "build": "rm -rf dist && tsc"
   },
   "repository": {
     "type": "git",
@@ -19,9 +19,7 @@
     "url": "https://github.com/hq229075284/common-tool/issues"
   },
   "files": [
-    "ajax/**/+(*.js|*.d.ts)",
-    "cache/**/+(*.js|*.d.ts)",
-    "socket/**/+(*.js|*.d.ts)"
+    "dist"
   ],
   "homepage": "https://github.com/hq229075284/common-tool#readme",
   "devDependencies": {
@@ -29,6 +27,7 @@
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
     "rollup": "^2.51.1",
+    "rollup-plugin-terser": "^7.0.2",
     "shelljs": "^0.8.4",
     "tslib": "^2.2.0",
     "typescript": "^4.3.2"
