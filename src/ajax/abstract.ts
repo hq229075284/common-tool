@@ -2,11 +2,14 @@ import type { AxiosError, AxiosInstance, AxiosPromise, AxiosRequestConfig, Axios
 
 import Axios from 'axios'
 
-export interface CustomConfig<T = any> extends AxiosRequestConfig {
+export interface IBaseAXiosConfig extends AxiosRequestConfig {
   onceAtSameTime?: boolean
-  onSuccess?(res: ResponseData<T>): void
-  onFail?(res: AxiosError<ResponseData>): void
-  getCancelTokenKey?(config: CustomConfig<T>): any
+  getCancelTokenKey?(config: IBaseAXiosConfig): any
+}
+
+export interface ICompleteAxiosConfig<T = any> extends IBaseAXiosConfig {
+  onSuccess(res: ResponseData<T>): void
+  onFail(res: AxiosError<ResponseData>): void
 }
 
 export type AllowedRequestMethod = 'POST' | 'GET' | 'PUT' | 'DELETE'
@@ -20,12 +23,12 @@ export default class Request {
   protected instance: AxiosInstance
   protected PENDING = new Promise<never>(() => {})
   protected cancelTokenMap = new Map()
-  constructor(baseCofig: CustomConfig = { onceAtSameTime: true }) {
+  constructor(baseCofig: IBaseAXiosConfig | ICompleteAxiosConfig = { onceAtSameTime: true }) {
     this.instance = Axios.create(baseCofig)
   }
   protected _createAjax<T>(url: string, method: AllowedRequestMethod = 'POST') {
-    return (data: any, otherConfig: CustomConfig) => {
-      const config: CustomConfig = {
+    return <C extends IBaseAXiosConfig>(data: any, otherConfig: C) => {
+      const config = {
         ...this.instance.defaults,
         url,
         method,
@@ -51,19 +54,25 @@ export default class Request {
       )
     }
   }
-  private onSuccess<T>(response: AxiosResponse<ResponseData<T>>, config: CustomConfig) {
+
+  private onSuccess<T>(response: AxiosResponse<ResponseData<T>>, config: IBaseAXiosConfig): ResponseData<T>
+  private onSuccess<T>(response: AxiosResponse<ResponseData<T>>, config: ICompleteAxiosConfig<T>): void
+  private onSuccess<T>(response: AxiosResponse<ResponseData<T>>, config: IBaseAXiosConfig | ICompleteAxiosConfig<T>): ResponseData<T> | void {
     const { data } = response
-    if (config.onSuccess) {
+    // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-in-operator-narrowing
+    if ('onSuccess' in config) {
       return config.onSuccess(data)
     }
     return data
   }
-  private onFail(error: AxiosError<ResponseData>, config: CustomConfig) {
+
+  private onFail(error: AxiosError<ResponseData>, config: IBaseAXiosConfig): Promise<never> | never
+  private onFail(error: AxiosError<ResponseData>, config: ICompleteAxiosConfig): Promise<never> | void
+  private onFail(error: AxiosError<ResponseData>, config: IBaseAXiosConfig | ICompleteAxiosConfig | any): Promise<never> | never | void {
     if (Axios.isCancel(error)) {
       return this.PENDING
     }
-    if (config.onFail) return config.onFail(error)
-    // return Promise.reject<AxiosError<ResponseData>>(error)
+    if ('onFail' in config) return config.onFail(error)
     throw error
   }
 }
