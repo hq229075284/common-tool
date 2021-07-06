@@ -1,11 +1,12 @@
 {
   "name": "@dc/common-tool",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "",
   "main": "dist/index.js",
   "types": "./dist/@types/index.d.ts",
   "scripts": {
-    "build": "rm -rf dist && tsc"
+    "build": "rm -rf dist && tsc",
+    "publish:preview": "rm -rf dist && node build-with-tsc && npm publish --dry-run"
   },
   "repository": {
     "type": "git",

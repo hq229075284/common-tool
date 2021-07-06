@@ -6,8 +6,9 @@
     "lib": ["DOM", "ESNext"],
     "declaration": true,
     "declarationDir": "dist/@types",
-    "outDir": "dist"
+    "outDir": "dist",
+    "strictNullChecks": true
   },
-  "exclude": ["node_modules", "dist"],
+  "exclude": ["node_modules", "dist", "**/example.ts"],
   "include": ["src/**/*"]
 }
