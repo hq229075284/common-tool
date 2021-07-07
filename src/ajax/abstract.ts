@@ -28,10 +28,14 @@ export const PENDING = new Promise<never>(() => {})
 
 export type AllowedRequestMethod = 'POST' | 'GET' | 'PUT' | 'DELETE'
 
+interface ISourceItem {
+  only?: boolean
+  source: CancelTokenSource
+}
 export default class Request {
   protected instance: AxiosInstance
 
-  public cancelTokenMap = new Map<any, CancelTokenSource>()
+  public pendingSourceMap = new Map<any, ISourceItem[]>()
 
   constructor(baseCofig: IBaseAxiosConfig = { onceAtSameTime: true }) {
     this.instance = Axios.create(baseCofig)
@@ -72,24 +76,39 @@ export default class Request {
       [method === 'GET' ? 'data' : 'params']: data,
       ...extraConfig,
     }
-    if (config.onceAtSameTime && config.cancelToken === undefined) {
-      const getCancelTokenKey = config.getCancelTokenKey || (() => config.url)
-      const key = getCancelTokenKey(config)
-      const source = Axios.CancelToken.source()
-      config.cancelToken = source.token
-      if (this.cancelTokenMap.has(key)) {
-        this.cancelTokenMap
-          .get(key)!
-          .cancel(`previous request was cancelled to ensure that guarad only one ${key} request existed on the network at the same time`)
-      }
-      this.cancelTokenMap.set(key, source)
+    // 为当前请求创建一个source
+    const source = Axios.CancelToken.source()
+    // 使`source.cancel()`生效
+    config.cancelToken = source.token
+    // 获取pendingSourceMap的key
+    const getCancelTokenKey = config.getCancelTokenKey || (() => config.url)
+    const key = getCancelTokenKey(config)
+    // key对应的请求source数组
+    let pendingSources = this.pendingSourceMap.get(key) || []
+    if (config.onceAtSameTime) {
+      /*
+       * 同一个key中，所有设置了`onceAtSameTime`为`true`的请求在网络上只能同时存在1个，
+       * 所以需要先取消掉之前标记为`only:true`的请求source（即配置项中`onceAtSameTime`为`true`）
+       */
+      pendingSources = pendingSources.filter((sourceItem) => {
+        if (sourceItem.only) {
+          sourceItem.source.cancel(
+            `previous request was cancelled to ensure that guarad only one ${key} request existed on the network at the same time`
+          )
+          return false
+        }
+        return true
+      })
     }
-    // <void | ResponseData, void | AxiosError<ResponseData>>
+    const sourceItem = { only: true, source }
+    // 记录新的请求source
+    pendingSources.push(sourceItem)
+    this.pendingSourceMap.set(key, pendingSources)
+
     const p = this.instance.request(config)
     return p.then(
-      // ()=>{throw new Error('12')},
-      (...args) => this.onSuccess<T>(...args, config),
-      (...args) => this.onFail(...args, config)
+      (...args) => this.onSuccess<T>(...args, config, key, sourceItem),
+      (...args) => this.onFail(...args, config, key, sourceItem)
     )
   }
 
@@ -103,14 +122,23 @@ export default class Request {
   //   return 1
   // }
 
-  private onSuccess<T>(response: AxiosResponse<ResponseData<T>>, config: ICallBackAxiosConfig<T>): void
-
-  private onSuccess<T>(response: AxiosResponse<ResponseData<T>>, config: IPromiseAxiosConfig): IPromiseAxiosThenValue<T>
+  private onSuccess<T>(response: AxiosResponse<ResponseData<T>>, config: ICallBackAxiosConfig<T>, key: any, sourceItem: ISourceItem): void
 
   private onSuccess<T>(
     response: AxiosResponse<ResponseData<T>>,
-    config: IPromiseAxiosConfig | ICallBackAxiosConfig<T>
+    config: IPromiseAxiosConfig,
+    key: any,
+    sourceItem: ISourceItem
+  ): IPromiseAxiosThenValue<T>
+
+  private onSuccess<T>(
+    response: AxiosResponse<ResponseData<T>>,
+    config: IPromiseAxiosConfig | ICallBackAxiosConfig<T>,
+    key: any,
+    sourceItem: ISourceItem
   ): IPromiseAxiosThenValue<T> | void {
+    const pendingSources = this.pendingSourceMap.get(key)!
+    pendingSources.splice(pendingSources.indexOf(sourceItem), 1)
     const { data } = response
     // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-in-operator-narrowing
     if ('onSuccess' in config) {
@@ -119,14 +147,26 @@ export default class Request {
     return { data, config }
   }
 
-  private onFail<T = any>(error: AxiosError<ResponseData>, config: ICallBackAxiosConfig<T>): Promise<never> | void
+  private onFail<T = any>(
+    error: AxiosError<ResponseData>,
+    config: ICallBackAxiosConfig<T>,
+    key: any,
+    sourceItem: ISourceItem
+  ): Promise<never> | void
 
-  private onFail(error: AxiosError<ResponseData>, config: IPromiseAxiosConfig): Promise<never>
+  private onFail(error: AxiosError<ResponseData>, config: IPromiseAxiosConfig, key: any, sourceItem: ISourceItem): Promise<never>
 
-  private onFail<T = any>(error: AxiosError<ResponseData>, config: IPromiseAxiosConfig | ICallBackAxiosConfig<T>): Promise<never> | void {
+  private onFail<T = any>(
+    error: AxiosError<ResponseData>,
+    config: IPromiseAxiosConfig | ICallBackAxiosConfig<T>,
+    key: any,
+    sourceItem: ISourceItem
+  ): Promise<never> | void {
     if (Axios.isCancel(error)) {
       return PENDING
     }
+    const pendingSources = this.pendingSourceMap.get(key)!
+    pendingSources.splice(pendingSources.indexOf(sourceItem), 1)
     if ('onFail' in config) {
       return config.onFail(error, config)
     }
