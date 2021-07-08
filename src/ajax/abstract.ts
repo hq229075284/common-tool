@@ -73,7 +73,7 @@ export default class Request {
       ...(this.instance.defaults as IBaseAxiosConfig),
       url,
       method,
-      [method === 'GET' ? 'data' : 'params']: data,
+      [method === 'GET' ? 'params' : 'data']: data,
       ...extraConfig,
     }
     // 为当前请求创建一个source
