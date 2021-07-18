@@ -162,13 +162,14 @@ export default class Request {
     key: any,
     sourceItem: ISourceItem
   ): Promise<never> | void {
-    if (Axios.isCancel(error)) {
-      return PENDING
-    }
     const pendingSources = this.pendingSourceMap.get(key)!
     pendingSources.splice(pendingSources.indexOf(sourceItem), 1)
+
     if ('onFail' in config) {
       return config.onFail(error, config)
+    }
+    if (Axios.isCancel(error)) {
+      if (!config.customErrorHandler) return PENDING
     }
     return Promise.reject({ error, config })
   }
