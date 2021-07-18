@@ -85,6 +85,7 @@ export default class Request {
     const key = getCancelTokenKey(config)
     // key对应的请求source数组
     let pendingSources = this.pendingSourceMap.get(key) || []
+    let sourceItem = { only: false, source }
     if (config.onceAtSameTime) {
       /*
        * 同一个key中，所有设置了`onceAtSameTime`为`true`的请求在网络上只能同时存在1个，
@@ -99,8 +100,8 @@ export default class Request {
         }
         return true
       })
+      sourceItem = { only: true, source }
     }
-    const sourceItem = { only: true, source }
     // 记录新的请求source
     pendingSources.push(sourceItem)
     this.pendingSourceMap.set(key, pendingSources)
@@ -137,8 +138,7 @@ export default class Request {
     key: any,
     sourceItem: ISourceItem
   ): IPromiseAxiosThenValue<T> | void {
-    const pendingSources = this.pendingSourceMap.get(key)!
-    pendingSources.splice(pendingSources.indexOf(sourceItem), 1)
+    this.removePendingSource(key, sourceItem)
     const { data } = response
     // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-in-operator-narrowing
     if ('onSuccess' in config) {
@@ -162,9 +162,7 @@ export default class Request {
     key: any,
     sourceItem: ISourceItem
   ): Promise<never> | void {
-    const pendingSources = this.pendingSourceMap.get(key)!
-    pendingSources.splice(pendingSources.indexOf(sourceItem), 1)
-
+    this.removePendingSource(key, sourceItem)
     if ('onFail' in config) {
       return config.onFail(error, config)
     }
@@ -172,5 +170,14 @@ export default class Request {
       if (!config.customErrorHandler) return PENDING
     }
     return Promise.reject({ error, config })
+  }
+
+  removePendingSource(key: string, sourceItem: ISourceItem) {
+    const pendingSources = this.pendingSourceMap.get(key)!
+    const fidx = pendingSources.indexOf(sourceItem)
+    // 被cancel的source，在cancel时已从pendingSources中移除，fidx的值将为-1
+    if (fidx > -1) {
+      pendingSources.splice(fidx, 1)
+    }
   }
 }
