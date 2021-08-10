@@ -11,15 +11,18 @@ export type ResponseData<T = any> = {
 export interface IBaseAxiosConfig extends AxiosRequestConfig {
   onceAtSameTime?: boolean
   getCancelTokenKey?(config: unknown): any
+  getCancelTokenSource?(): CancelTokenSource
 }
 
 export interface IPromiseAxiosConfig extends IBaseAxiosConfig {
+  getCancelTokenKey?(config: IPromiseAxiosConfig): any
   customErrorHandler?: boolean
 }
 export type IPromiseAxiosThenValue<T> = { data: ResponseData<T>; config: IPromiseAxiosConfig }
 export type IPromiseAxiosErrorValue = { error: AxiosError<ResponseData>; config: IPromiseAxiosConfig }
 
 export interface ICallBackAxiosConfig<T> extends IBaseAxiosConfig {
+  getCancelTokenKey?(config: ICallBackAxiosConfig<T>): any
   onSuccess(res: ResponseData<T>, conifg: ICallBackAxiosConfig<T>): void
   onFail(res: AxiosError<ResponseData>, conifg: ICallBackAxiosConfig<T>): void
 }
@@ -76,8 +79,13 @@ export default class Request {
       [method === 'GET' ? 'params' : 'data']: data,
       ...extraConfig,
     }
-    // 为当前请求创建一个source
-    const source = Axios.CancelToken.source()
+    let source: CancelTokenSource
+    if (config.getCancelTokenSource) {
+      source = config.getCancelTokenSource()
+    } else {
+      // 为当前请求创建一个source
+      source = Axios.CancelToken.source()
+    }
     // 使`source.cancel()`生效
     config.cancelToken = source.token
     // 获取pendingSourceMap的key
