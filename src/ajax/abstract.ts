@@ -18,12 +18,12 @@ export interface IPromiseAxiosConfig extends IBaseAxiosConfig {
   getCancelTokenKey?(config: IPromiseAxiosConfig): any
   customErrorHandler?: boolean
 }
-export type IPromiseAxiosThenValue<T> = { data: ResponseData<T>; config: IPromiseAxiosConfig }
+export type IPromiseAxiosThenValue<T> = { data: ResponseData<T>; config: IPromiseAxiosConfig; response: AxiosResponse<ResponseData<T>> }
 export type IPromiseAxiosErrorValue = { error: AxiosError<ResponseData>; config: IPromiseAxiosConfig }
 
 export interface ICallBackAxiosConfig<T> extends IBaseAxiosConfig {
   getCancelTokenKey?(config: ICallBackAxiosConfig<T>): any
-  onSuccess(res: ResponseData<T>, conifg: ICallBackAxiosConfig<T>): void
+  onSuccess(res: ResponseData<T>, conifg: ICallBackAxiosConfig<T>, response: AxiosResponse<ResponseData<T>>): void
   onFail(res: AxiosError<ResponseData>, conifg: ICallBackAxiosConfig<T>): void
 }
 
@@ -150,9 +150,9 @@ export default class Request {
     const { data } = response
     // https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-in-operator-narrowing
     if ('onSuccess' in config) {
-      return config.onSuccess(data, config)
+      return config.onSuccess(data, config, response)
     }
-    return { data, config }
+    return { response, data, config }
   }
 
   private onFail<T = any>(
