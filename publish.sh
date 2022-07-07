@@ -19,7 +19,7 @@ if [[ $VERSION == '' ]]; then
     VERSION=$PREV_VERSION
 fi
 
-npm run pkg
+npm run build
 
 cp package.json package_template.json
 sed "s/\"version\": \"${PREV_VERSION}\"/\"version\": \"${VERSION}\"/" package_template.json > package.json
