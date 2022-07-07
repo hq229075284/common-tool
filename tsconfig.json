@@ -7,7 +7,9 @@
     "declaration": true,
     "declarationDir": "dist/@types",
     "outDir": "dist",
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "allowJs": true,
+    "esModuleInterop": true
   },
   "exclude": ["node_modules", "dist", "**/example.ts"],
   "include": ["src/**/*"]
