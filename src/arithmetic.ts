@@ -40,7 +40,7 @@ export function add(...args: (string | number)[]) {
 }
 
 /**
- * 精度加法
+ * 精度减法
  * @param  {...number|string} args 被减数和减数们
  * @returns 差
  */
