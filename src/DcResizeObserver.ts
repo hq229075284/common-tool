@@ -1,13 +1,13 @@
 // interface CustomResizeObserver extends ResizeObserver {
 //   targetMapToCallback: Map<HTMLElement, Function>
 // }
-class DcResizeObserve {
+class DcResizeObserver {
   private targetMapToCallback: Map<Element, Function[]> = new Map()
   private ob: ResizeObserver
   private ignoreResizeObserverOnce = true
 
   constructor() {
-    this.ob = new ResizeObserver(this.schedule)
+    this.ob = new ResizeObserver(this.schedule.bind(this))
   }
 
   /**
@@ -16,11 +16,14 @@ class DcResizeObserve {
    * @param observer ResizeObserver
    */
   private schedule(entries: ResizeObserverEntry[], observer: ResizeObserver): void {
-    this.ignoreResizeObserverOnce = false
+    if (this.ignoreResizeObserverOnce) {
+      this.ignoreResizeObserverOnce = false
+      return
+    }
     entries.forEach((entry) => {
       const callbacks = this.targetMapToCallback.get(entry.target)
       if (callbacks && callbacks.length) {
-        callbacks.forEach((cb) => cb())
+        callbacks.forEach((cb) => cb(entry))
       }
     })
   }
@@ -29,9 +32,28 @@ class DcResizeObserve {
    * 解除元素大小监听
    * @param target 被监听的目标元素
    */
-  unobserve(target: Element): void {
-    if (this.targetMapToCallback.has(target)) this.targetMapToCallback.delete(target)
-    this.ob.unobserve(target)
+  unobserve(target: Element, callback?: Function): void {
+    if (this.targetMapToCallback.has(target)) {
+      if (callback) {
+        const cbs = this.targetMapToCallback.get(target)!
+        const fidx = cbs.indexOf(callback)
+        // 存在对应的要移除的callback
+        if (fidx > -1) {
+          // 移除后清空
+          if (cbs.length === 1) {
+            this.targetMapToCallback.delete(target)
+            this.ob.unobserve(target)
+          } else {
+            // 移除对应的callback
+            cbs.splice(fidx, 1)
+          }
+        }
+      } else {
+        // 未提供第二个参数时，清空该元素的所有
+        this.targetMapToCallback.delete(target)
+        this.ob.unobserve(target)
+      }
+    }
   }
 
   /**
@@ -49,6 +71,8 @@ class DcResizeObserve {
     this.ob.observe(target)
   }
 }
+
+export default DcResizeObserver
 
 // new ResizeObserver(() => {
 //   /* 变化 */

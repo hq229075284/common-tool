@@ -1,6 +1,8 @@
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
-  preset: 'ts-jest/presets/js-with-ts',
-  testEnvironment: 'node',
-  testRegex: ['getAxisMaxAndMin\\.test\\.js'],
+  preset: './jest-preset.js',
+  // preset: 'jest-puppeteer',
+  // preset: 'ts-jest/presets/js-with-ts',
+  // testEnvironment: 'node',
+  testRegex: ['DcResizeObserver\\.test\\.js'],
 }
