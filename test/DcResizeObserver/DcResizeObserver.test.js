@@ -1,13 +1,14 @@
-import DcResizeObserver from '../src/DcResizeObserver'
+import DcResizeObserver from '../../src/DcResizeObserver'
 
 // function DcResizeObserver() {}
 
 beforeAll(async () => {
-  await page.goto('http://127.0.0.1:8080/p.html')
+  await page.goto('https://www.freehan.ml/test.html')
 })
 
 test('监听容器变化', async () => {
   // https://pptr.dev/api/puppeteer.page.exposefunction#example-1
+  // https://pptr.dev/api/puppeteer.pageeventobject/
   page.on('console', (msg) => console.log(msg.text()))
   const trigger = await page.evaluate((DcResizeObserverStr) => {
     const ob = new Function(DcResizeObserverStr + '\nreturn new DcResizeObserver()')()
