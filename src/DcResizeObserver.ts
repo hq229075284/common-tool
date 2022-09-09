@@ -1,6 +1,8 @@
 // interface CustomResizeObserver extends ResizeObserver {
 //   targetMapToCallback: Map<HTMLElement, Function>
 // }
+import 'resize-observer-polyfill'
+
 class DcResizeObserver {
   private targetMapToCallback: Map<Element, Function[]> = new Map()
   private ob: ResizeObserver

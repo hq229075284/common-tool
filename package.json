@@ -42,6 +42,7 @@
     "typescript": "^4.3.2"
   },
   "dependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "resize-observer-polyfill": "^1.5.1"
   }
 }
