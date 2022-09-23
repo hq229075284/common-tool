@@ -5,9 +5,10 @@ module.exports = {
   // preset: 'ts-jest/presets/js-with-ts',
   // testEnvironment: 'node',
   testRegex: [
+    'DcResizeObserver\\.test\\.js',
     'getAxisMaxAndMin\\.test\\.js',
-    // 'traverseEveryProperty\\.test\\.js',
-    // 'DcResizeObserver\\.test\\.js',
-    // 'loop\\.test\\.js'
+    'loop\\.test\\.js',
+    'traverseEveryProperty\\.test\\.js',
+    // placeholder
   ],
 }
