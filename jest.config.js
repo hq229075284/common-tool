@@ -4,6 +4,10 @@ module.exports = {
   // preset: 'jest-puppeteer',
   // preset: 'ts-jest/presets/js-with-ts',
   // testEnvironment: 'node',
-  testRegex: ['traverseEveryProperty\\.test\\.js'],
-  // testRegex: ['DcResizeObserver\\.test\\.js'],
+  testRegex: [
+    'getAxisMaxAndMin\\.test\\.js',
+    // 'traverseEveryProperty\\.test\\.js',
+    // 'DcResizeObserver\\.test\\.js',
+    // 'loop\\.test\\.js'
+  ],
 }

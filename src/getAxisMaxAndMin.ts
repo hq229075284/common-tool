@@ -39,7 +39,7 @@ interface IOption {
  *  zeroIsMin 当最小值为负数时，是否强制0为最小值
  * @returns { max:string, min:string, interval:number }
  */
-export default function getAxisMaxAndMin(option: Partial<IOption> = {}) {
+export default function getAxisMaxAndMin(option: Partial<IOption> = {}): { max: number; min: number; interval: number } {
   // 参数检查
   const propertiesOfBooleanType = ['zeroIsMin']
   Object.entries(option).forEach(([key, value]) => {
@@ -109,10 +109,20 @@ export default function getAxisMaxAndMin(option: Partial<IOption> = {}) {
     axisMax = add(axisMin, multiply(splitNumber, add(matched[0], minInterval)))
   }
 
+  let interval: string | number = String(getInterval({ max: axisMax, min: axisMin, splitNumber }))
+
+  if (interval.split('.')[1]?.length > fixedLength) {
+    const matched = interval.match(new RegExp(`\\d+\\.\\d{${fixedLength}}`))!
+    interval = add(matched[0], minInterval)
+    axisMax = add(axisMin, multiply(splitNumber, interval))
+  } else {
+    interval = +interval
+  }
+
   return {
     max: axisMax,
     min: axisMin,
-    interval: getInterval({ max: axisMax, min: axisMin, splitNumber }),
+    interval,
   }
 }
 

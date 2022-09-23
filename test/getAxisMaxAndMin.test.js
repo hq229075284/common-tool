@@ -96,3 +96,20 @@ test('multiply测试', () => {
     interval: 0.5,
   })
 })
+
+test('计算interval时，做除法时的精度测试', () => {
+  expect(
+    getAxisMaxAndMin({
+      max: 9.1,
+      min: 0,
+      splitNumber: 5,
+      diffRange: 1,
+      fixedLength: 2,
+      showRatio: 1,
+    })
+  ).toEqual({
+    max: 9.1,
+    min: 0,
+    interval: 1.82,
+  })
+})

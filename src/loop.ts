@@ -84,10 +84,10 @@ export default class Loop {
       }
 
       const runAfterHook = () => {
-        this.option.hooksAfterRun.forEach((hook) => hook())
         if (this.runId !== runId) {
           throw STOP
         }
+        this.option.hooksAfterRun.forEach((hook) => hook())
       }
 
       if (this.option.hooksBeforeRun.length) {
