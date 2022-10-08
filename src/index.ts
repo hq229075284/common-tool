@@ -7,5 +7,7 @@ import WorkflowPool from './workflow/pool'
 import Loop from './loop'
 import getAxisMaxAndMin from './getAxisMaxAndMin'
 import * as arithmetic from './arithmetic'
+import traverseEveryProperty from './traverseEveryProperty'
+import DcResizeObserver from './DcResizeObserver'
 
-export { Ajax, Socket, Cache, PENDING, Workflow, WorkflowPool, Loop, getAxisMaxAndMin, arithmetic }
+export { Ajax, Socket, Cache, PENDING, Workflow, WorkflowPool, Loop, getAxisMaxAndMin, arithmetic, traverseEveryProperty, DcResizeObserver }
