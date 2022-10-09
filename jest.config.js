@@ -5,7 +5,8 @@ module.exports = {
   // preset: 'ts-jest/presets/js-with-ts',
   // testEnvironment: 'node',
   testRegex: [
-    'crypto\\.test\\.js',
+    'loadAny\\.test\\.js',
+    // 'crypto\\.test\\.js',
     // 'DcResizeObserver\\.test\\.js',
     // 'getAxisMaxAndMin\\.test\\.js',
     // 'loop\\.test\\.js',
