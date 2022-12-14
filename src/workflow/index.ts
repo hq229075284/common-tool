@@ -1,91 +1,84 @@
-export interface IWork {
-  (done?: IWorkflow['done'], ...prevReturnValue: any[]): void | Promise<any>
+export type IDoneFunction = (flowId: number, ...prevReturnValue: any[]) => void
+export type IWorkFunction = (done: IDoneFunction, ...prevReturnValue: any[]) => void | Promise<any>
+
+// export function workWrapper(fn: Function) {
+//   return fn
+// }
+
+export interface IOption {
+  workQueue?: IWorkFunction[]
 }
 
 export interface IWorkflow {
-  isAborted: boolean
-  waitToStartNextWorkFlow: boolean
-  working: boolean
-  workQueue: Array<IWork>
-  done(): void
-  doAbort(): void
-  setWorkStep(fn: IWork): boolean
-  removeWorkStep(fn: IWork): boolean
-  startWorkFlow(): void
-  doWork(...args: any[]): void
+  flowId: number
   workIndex: number
+  workQueue: IWorkFunction[]
+  initOptions: IOption
+  addWork: Function
+  clear: Function
+  reset: Function
+  start: Function
+  // execWork: Function
+  // done: IDoneFunction
 }
 
 export default class Workflow implements IWorkflow {
-  isAborted = false
-  waitToStartNextWorkFlow = false
-  working = false
-  workQueue = [] as IWork[]
+  flowId = 0
   workIndex = 0
-  doAbort() {
-    if (this.working) {
-      this.isAborted = true
-      this.waitToStartNextWorkFlow = false
+
+  workQueue = [] as IWorkFunction[]
+
+  initOptions: IOption
+
+  constructor(option: IOption = {}) {
+    this.initOptions = option
+    if (this.initOptions?.workQueue) {
+      this.workQueue = [...this.initOptions.workQueue]
     }
   }
-  setWorkStep(fn: IWork): boolean {
-    this.workQueue.push(fn)
-    return true
+
+  get addWork() {
+    return this._addWork.bind(this, this.flowId)
   }
-  removeWorkStep(fn: IWork) {
-    const fidx = this.workQueue.indexOf(fn)
-    if (fidx > -1) {
-      if (fidx <= this.workIndex) {
-        this.workIndex--
-      }
-      this.workQueue.splice(fidx, 1)
-      return true
-    }
-    return false
+
+  // 添加工作任务
+  private _addWork(flowId, workFunction: IWorkFunction) {
+    if (this.flowId !== flowId) return
+    this.workQueue.push(workFunction)
   }
-  done(...currentReturnValue) {
-    if (this.isAborted) {
-      this.workIndex = 0
-      this.isAborted = false
-      if (this.waitToStartNextWorkFlow) {
-        this.waitToStartNextWorkFlow = false
-        this.doWork()
-      } else {
-        this.working = false
-      }
-    } else if (this.workIndex < this.workQueue.length - 1) {
-      this.workIndex += 1
-      this.doWork(...currentReturnValue)
-    } else {
-      this.workIndex = 0
-      this.working = false
+
+  // 恢复初始工作队列
+  clear() {
+    if (this.initOptions?.workQueue) {
+      this.workQueue = [...this.initOptions.workQueue]
     }
   }
-  doWork(...prevReturnValue) {
-    const work = this.workQueue[this.workIndex]
-    if (work) {
-      //   if (work.length >= 1) {
-      //     const ret = work(this.done, ...prevReturnValue)
-      //     if (ret instanceof Promise) {
-      //       ret.then(this.done)
-      //     }
-      //   } else {
-      const ret = work(...prevReturnValue)
-      if (ret instanceof Promise) {
-        ret.then(this.done)
-      } else {
-        this.done(ret)
-      }
-      //   }
+
+  // 恢复指针和重置flowId
+  reset() {
+    this.workIndex = 0
+    this.flowId += 1
+  }
+
+  // 队列开始执行
+  start() {
+    this.execWork()
+  }
+
+  // 执行工作任务
+  private execWork(...prevReturnValue: any[]) {
+    const bindDone = this.done.bind(this, this.flowId)
+    const returnValue = this.workQueue[this.workIndex](bindDone, ...prevReturnValue)
+    if (returnValue instanceof Promise) {
+      returnValue.then(bindDone)
     }
   }
-  startWorkFlow() {
-    if (this.working) {
-      this.isAborted = true
-      this.waitToStartNextWorkFlow = true
-    } else {
-      this.working = true
-      this.doWork()
-    }
+
+  // 工作任务完成回调
+  private done(flowId, ...args: any[]) {
+    if (this.flowId !== flowId) return
+    if (this.workIndex === this.workQueue.length - 1) return
+    this.workIndex += 1
+    this.execWork(...args)
   }
 }
