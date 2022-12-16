@@ -5,14 +5,14 @@ test('静态工作队列执行', (testDone) => {
     done(1)
   }
 
-  function task2(done, prevValue) {
+  function task2(done, flowId, prevValue) {
     setTimeout(() => {
       expect(prevValue).toEqual(1)
       done(2)
     }, 1000)
   }
 
-  function task3(done, prevValue) {
+  function task3(done, flowId, prevValue) {
     setTimeout(() => {
       expect(prevValue).toEqual(2)
       done()
@@ -28,20 +28,20 @@ test('静态工作队列执行', (testDone) => {
 })
 
 test('动态工作队列执行', (testDone) => {
-  function task1(done) {
-    flow.addWork(task2)
+  function task1(done, flowId) {
+    flow.addWork(flowId, task2)
     done(1)
   }
 
-  function task2(done, prevValue) {
+  function task2(done, flowId, prevValue) {
     setTimeout(() => {
       expect(prevValue).toEqual(1)
-      flow.addWork(task3)
+      flow.addWork(flowId, task3)
       done(2)
     }, 1000)
   }
 
-  function task3(done, prevValue) {
+  function task3(done, flowId, prevValue) {
     setTimeout(() => {
       expect(prevValue).toEqual(2)
       done()
@@ -51,7 +51,7 @@ test('动态工作队列执行', (testDone) => {
 
   const flow = new Workflow({})
 
-  flow.addWork(task1)
+  flow.addWork(flow.flowId, task1)
 
   flow.start()
 })
@@ -61,15 +61,15 @@ test('动静混合工作队列执行', (testDone) => {
     done(1)
   }
 
-  function task2(done, prevValue) {
+  function task2(done, flowId, prevValue) {
     setTimeout(() => {
       expect(prevValue).toEqual(1)
-      flow.addWork(task3)
+      flow.addWork(flowId, task3)
       done(2)
     }, 1000)
   }
 
-  function task3(done, prevValue) {
+  function task3(done, flowId, prevValue) {
     setTimeout(() => {
       expect(prevValue).toEqual(2)
       done()
@@ -153,4 +153,51 @@ test('中断后另起工作', (testDone) => {
     expect(execTask2Count).toBe(1)
     testDone()
   }, 3000)
+})
+
+test('工作队列执行完成后添加新的工作任务时，抛出错误提示', () => {
+  function task1(done, flowId) {
+    done(1)
+    expect(() => flow.addWork(flowId, task2)).toThrow(/^工作流程id:\d+已完成，无法动态添加新的任务到此工作流程中$/)
+  }
+
+  function task2() { }
+
+  const flow = new Workflow({
+    workQueue: [task1]
+  })
+
+  flow.start()
+})
+
+test('addWork时没有指定flowId，抛出错误信息', () => {
+  function task1(done, flowId) {
+    expect(() => flow.addWork(task2)).toThrow('addWork的第一个参数需为number类型，表示工作任务要添加到的目标工作队列id')
+    done(1)
+  }
+
+  function task2() { }
+
+  const flow = new Workflow({
+    workQueue: [task1]
+  })
+
+  flow.start()
+})
+
+test('同一任务队列，在不执行reset的前提下，多次执行start，抛出错误信息', () => {
+  function task1(done, flowId) {
+    setTimeout(() => {
+      done(1)
+    }, 500)
+  }
+
+  const flow = new Workflow({
+    workQueue: [task1]
+  })
+
+  expect(() => {
+    flow.start()
+    flow.start()
+  }).toThrow('当前队列一开始执行，请执行reset函数后再执行start函数')
 })
