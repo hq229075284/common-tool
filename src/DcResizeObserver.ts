@@ -6,7 +6,7 @@ import 'resize-observer-polyfill'
 class DcResizeObserver {
   private targetMapToCallback: Map<Element, Function[]> = new Map()
   private ob: ResizeObserver
-  private ignoreResizeObserverOnce = true
+  private ignoreResizeObserverOnce = false
 
   constructor() {
     this.ob = new ResizeObserver(this.schedule.bind(this))
@@ -63,13 +63,16 @@ class DcResizeObserver {
    * @param target 目标元素
    * @param callback 监听回调
    */
-  observe(target: Element, callback: Function): void {
+  observe(target: HTMLElement, callback: Function): void {
     if (this.targetMapToCallback.has(target)) {
       this.targetMapToCallback.set(target, this.targetMapToCallback.get(target)!.concat([callback]))
     } else {
       this.targetMapToCallback.set(target, [callback])
     }
-    this.ignoreResizeObserverOnce = true
+    const visible = !!(target.offsetWidth || target.offsetHeight || target.getClientRects().length)
+    if (visible) {
+      this.ignoreResizeObserverOnce = true
+    }
     this.ob.observe(target)
   }
 }
