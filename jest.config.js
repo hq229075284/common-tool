@@ -7,11 +7,12 @@ module.exports = {
   testRegex: [
     // 'loadAny\\.test\\.js',
     // 'crypto\\.test\\.js',
-    'DcResizeObserver\\.test\\.js',
+    // 'DcResizeObserver\\.test\\.js',
     // 'getAxisMaxAndMin\\.test\\.js',
     // 'loop\\.test\\.js',
     // 'traverseEveryProperty\\.test\\.js',
     // 'workflow\\.test\\.js',
+    'aliveDetection\\.test\\.js',
     // placeholder
   ],
 }
