@@ -4,6 +4,16 @@
   "description": "",
   "main": "dist/index.js",
   "types": "./dist/@types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/@types/index.d.ts"
+    },
+    "./dist/*": {
+      "import": "./dist/*.js",
+      "types": "./dist/@types/*.d.ts"
+    }
+  },
   "scripts": {
     "test": "jest",
     "build": "rm -rf dist && tsc",
