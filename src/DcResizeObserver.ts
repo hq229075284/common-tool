@@ -6,6 +6,7 @@ import 'resize-observer-polyfill'
 class DcResizeObserver {
   private targetMapToCallback: Map<Element, Function[]> = new Map()
   private ob: ResizeObserver
+  // 忽略1次ResizeObserver的回调
   private ignoreResizeObserverOnce = false
 
   constructor() {
@@ -71,6 +72,11 @@ class DcResizeObserver {
     }
     const visible = !!(target.offsetWidth || target.offsetHeight || target.getClientRects().length)
     if (visible) {
+      /**
+       * 对可见元素初次observe时，会触发schedule
+       * 但设计的是当元素的size变化时，触发schedule
+       * 故忽略这次的schedule
+       */
       this.ignoreResizeObserverOnce = true
     }
     this.ob.observe(target)
