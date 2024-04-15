@@ -6,17 +6,24 @@
   "types": "./dist/@types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/@types/index.d.ts"
+      "import": "./dist/esm/index.js",
+      "require": "./dist/lib/index.js",
+      "types": "./dist/esm/@types/index.d.ts"
     },
-    "./dist/*": {
-      "import": "./dist/*.js",
-      "types": "./dist/@types/*.d.ts"
+    "./dist/esm/*": {
+      "import": "./dist/esm/*",
+      "require": "./dist/lib/*",
+      "types": "./dist/esm/@types/*"
+    },
+    "./dist/lib/*": {
+      "import": "./dist/esm/*",
+      "require": "./dist/lib/*",
+      "types": "./dist/lib/@types/*"
     }
   },
   "scripts": {
     "test": "jest",
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf output && tsc -p ./tsconfig.esm.json && tsc -p ./tsconfig.cjs.json",
     "publish:preview": "rm -rf dist && node build-with-tsc && npm publish --dry-run"
   },
   "repository": {
